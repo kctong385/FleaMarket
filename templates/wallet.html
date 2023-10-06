@@ -1,0 +1,158 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    My Wallet
+{% endblock %}
+
+{% block left_nav %}
+    <h5>
+        <a class="nav-link active" onclick="display_transactions()">Balance & Transactions</a>
+        <a class="nav-link active" onclick="display_orders()">My Orders</a>
+    </h5>
+
+    <script>
+        function display_orders() {
+            document.getElementById("orders").style.display = "block";
+            document.getElementById("transactions").style.display = "none";
+        }
+
+        function display_transactions() {
+            document.getElementById("orders").style.display = "none";
+            document.getElementById("transactions").style.display = "block";
+        }
+    </script>
+{% endblock %}
+
+{% block main %}
+    <div class="container content">
+        <div class="row">
+            <h1>My Wallet</h1>
+        </div>
+
+        <div id="orders" style="Display: none">
+            <h3>My Orders</h3>
+
+            <table id="main_table" class="table table-striped">
+                <tr>
+                    <th>Details</th>
+                    <th>Date & time</th>
+                    <th>Order ID</th>
+                    <th>Buyer</th>
+                    <th>Status</th>
+                </tr>
+
+                {% for row in orders %}
+                <tr data-bs-toggle="collapse" class="accordion">
+                    <td><button type="button" class="btn btn-primary" data-bs-toggle="collapse" data-bs-target="#table_OID_{{row['order_id']}}">Expand</button></td>
+                    <td>{{ row["datetime"] }}</td>
+                    <td>{{ row["order_id"] }}</td>
+                    <td>{{ row["buyer"] }}</td>
+                    <td>{{ row["status"] }}</td>
+                </tr>
+
+                <tr>
+                    <td colspan="6" class="hiddenRow">
+                        <div id="table_OID_{{row['order_id']}}" class="collapse">script not good</div>
+                    </td>
+                </tr>
+
+                {% endfor %}
+
+                <script>
+                    let orders = {{orders|tojson|safe}};
+                    let data = {{order_details|tojson|safe}};
+
+                    function generate_table(oid) {
+                        var table_data = [];
+
+                        for (row of data) {
+                            if (row["order_id"] == oid) {
+                                table_data.push(row);
+                            }
+                        }
+
+                        var html = `<table class="table" style="margin-bottom: 0rem">`;
+                            html += `<tr>`;
+                            html += `<th>Product</th>`;
+                            html += `<th>Qty</th>`;
+                            html += `<th>Sold Price</th>`;
+                            html += `<th>Status</th>`;
+                            html += `</tr>`;
+
+                        for (row of table_data) {
+                            html += `<tr>`;
+                            html += `<td>${row["product_name"]}</td>`;
+                            html += `<td>${row["quantity"]}</td>`;
+                            html += `<td>${row["sold_price"]}</td>`;
+                            html += `<td>${row["status"]}</td>`;
+                            html += `</tr>`;
+                        }
+
+                        html += `</table>`;
+
+                        return html;
+                    }
+
+                    for (row of orders) {
+                        var oid = row["order_id"];
+                        var id = `table_OID_${oid}`;
+                        document.getElementById(id).innerHTML = generate_table(oid);
+                    }
+                </script>
+            </table>
+        </div> <!--orders-->
+
+
+        <div id="transactions">
+
+            <div class="h4" style="Width: 450px; margin: auto;">
+
+                <div class="row">
+                  <div class="col align-right" style="Width: 225px;">
+                      <h3>Wallet Balance: </h3>
+                  </div>
+                  <div class="col align-right" style="Width: 225px;">
+                      <h3 style="padding-right: 50px;">{{ balance|usd }}</h3>
+                  </div>
+                </div>
+
+                <form method="post">
+                    <div class="row">
+                      <div class="col align-right" style="Width: 225px;">
+                        <button type="submit" class="btn btn-primary btn-sm" formaction="/deposit_wallet" style="width:85px">Deposit</button>
+                        <button type="submit" class="btn btn-primary btn-sm" formaction="/withdrawal_wallet" style="width:85px">Withdraw</button>
+                      </div>
+                      <div class="col" style="Width: 225px; padding-left: 25px;">
+                        <input type="number" class="form-control" name="amount" step="1" placeholder="Enter amount" style="width:150px">
+                      </div>
+                    </div>
+                </form>
+
+            </div>
+
+            <br>
+
+            <h3>Transaction</h3>
+            <table class="table">
+                <tr>
+                    <th>Date & Time</th>
+                    <th>Transaction Type</th>
+                    <th>Amount</th>
+                    <th>Remark</th>
+                </tr>
+                {% for row in transactions %}
+                <tr>
+                    <td>{{ row["datetime"] }}</td>
+                    <td>{{ row["type"] }}</td>
+                    <td>{{ row["amount"]|usd }}</td>
+                    <td>{{ row["remark"] }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div> <!--transactions-->
+    </div> <!--container-->
+{% endblock %}
+
+
+{% block right_nav %}
+{% endblock %}

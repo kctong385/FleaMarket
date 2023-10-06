@@ -1,0 +1,240 @@
+{% extends "layout.html" %}
+
+{% block head %}
+  <link href="/static/pop-up.css" rel="stylesheet">
+  <script src="/static/product.js"></script>
+
+  <script>
+    let products_db = {{products|tojson|safe}};
+    let product_name = ``;
+    function get_name(product_id) {
+      document.getElementById("modal_product_id").value = product_id;
+
+      for (let row of products_db) {
+        if (row['product_id'] == product_id) {
+          product_name = row['product_name'];
+        }
+      }
+      document.getElementById("modal_product_name").innerHTML = product_name;
+    }
+  </script>
+{% endblock %}
+
+{% block title %}
+    My Store
+{% endblock %}
+
+{% block left_nav %}
+  <h5>
+    <a class="nav-link active" onclick="display_products()">My Inventories</a>
+    <a class="nav-link active" onclick="display_transactions()">Balance & Transactions</a>
+  </h5>
+
+  <script>
+    function display_products() {
+      document.getElementById("products").style.display = "block";
+      document.getElementById("transactions").style.display = "none";
+    }
+
+    function display_transactions() {
+      document.getElementById("products").style.display = "none";
+      document.getElementById("transactions").style.display = "block";
+    }
+  </script>
+{% endblock %}
+
+{% block right_nav %}
+{% endblock %}
+
+{% block main %}
+  <div class="container content">
+    <h1> My Store </h1>
+
+    <!-- INVENTORY -->
+    <div id="products">
+      <h3> Inventories </h3>
+      <table class="table">
+        <tr>
+          <th>Product</th>
+          <th>Category</th>
+          <th>Price</th>
+          <th>Stock</th>
+          <th>Revise</th>
+          <th>Delete</th>
+        </tr>
+
+        {% for row in products %}
+        <tr>
+          <td>{{ row["product_name"] }}</td>
+          <td>{{ row["category"] }}</td>
+          <td>{{ row["price"] }}</td>
+          <td>{{ row["stock"] }}</td>
+          <!-- Revise Button -->
+          <td>
+            <button type="button" onclick="get_name({{row['product_id']}})" class="btn btn-info" 
+              data-bs-toggle="modal" data-bs-target="#reviseProductModal">
+              Revise
+            </button>
+          </td>
+          <!-- Delete Button -->
+          <td> 
+            <form action="/delete_product" method="post" id="DeleteProductForm">
+              <input type="hidden" name="product_id" value={{ row["product_id"] }}>
+              <button type="submit" class="btn btn-danger">Delete</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </table>
+
+      <!-- Register New Products Button -->
+      <button class="open-button" onclick="openForm()">Register New Product</button>
+    </div> 
+
+
+
+    <!-- TRANSACTION -->
+    <div id="transactions" style="Display: none">
+      <div class="h4" style="Width: 450px; margin: auto;">
+
+        <div class="row">
+          <div class="col align-right">
+            <h3>Wallet Balance: </h3>
+          </div>
+          <div class="col align-right">
+            <h3 style="padding-right: 50px;">{{ balance[0]["deposit"]|usd }}</h3>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col align-right">
+            <h3>Store Balance: </h3>
+          </div>
+          <div class="col align-right">
+            <h3 style="padding-right: 50px;">{{ balance[0]["store_balance"]|usd }}</h3>
+          </div>
+        </div>
+
+        <form method="post">
+          <div class="row">
+            <div class="col align-right">
+              <button type="submit" class="btn btn-primary btn-sm" formaction="/deposit_to_store" style="width:85px">Deposit</button>
+              <button type="submit" class="btn btn-primary btn-sm" formaction="/withdrawal_from_store" style="width:85px">Withdraw</button>
+            </div>
+            <div class="col align-left">
+              <input type="number" class="form-control" name="amount" step="1" placeholder="Enter amount" style="width:150px">
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <br>
+
+      <h3>Transactions</h3>
+
+      <table class="table">
+        <tr>
+          <th>Date & Time</th>
+          <th>Transaction Type</th>
+          <th>Amount</th>
+          <th>Remark</th>
+        </tr>
+        {% for row in transactions_seller %}
+          <tr>
+            <td>{{ row["datetime"] }}</td>
+            <td>{{ row["type"] }}</td>
+            <td>{{ row["amount"]|usd }}</td>
+            <td>{{ row["remark"] }}</td>
+          </tr>
+        {% endfor %}
+      </table>
+    </div> 
+  </div> 
+
+
+
+  <!-- PopForm for registering new product -->
+  <div class="form-popup" id="CreateProductForm">
+    <form action="/create_product" method="post" class="form-container" enctype="multipart/form-data">
+      <h1>New Product</h1>
+
+      <label for="Product Name"><b>Product Name</b></label>
+      <input type="text" placeholder="Enter Product Name" name="product_name" required>
+
+      <label for="Price"><b>Price</b></label>
+      <input type="number" placeholder="Enter Price" name="price" step="0.01" required>
+
+      <label for="Product Image"><b>Product Image</b></label>
+      <input type="file" name="product_image" accept="image/jpeg, image/jpg, image/png">
+
+      <label for="Category"><b>Category</b></label>
+      <div>
+        <select name="category">
+          <option disabled selected>Select category</option>
+          {% for item in CATEGORY %}
+            <option value={{item}}>{{item}}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <button type="submit" class="btn">Register</button>
+      <button type="button" class="btn cancel" onclick="closeForm()">Close</button>
+    </form>
+  </div>
+
+  
+
+  <!-- Modal for revise product-->
+  <div class="modal fade" id="reviseProductModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content">
+
+        <div class="modal-header">
+          <h2 class="modal-title fs-5" id="exampleModalLabel">Revise Product</h2>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+
+        <form action="/revise_product" method="post" enctype="multipart/form-data">
+          <div class="modal-body">
+            <h3 id="modal_product_name"></h3>
+
+            <div style="text-align: left; margin-left: 90px;">
+
+              <input id="modal_product_id" name="product_id" type="hidden">
+
+              <label for="Category"><b>Category</b></label>
+              <select name="category">
+                <option disabled selected>Select category</option>
+                {% for item in CATEGORY %}
+                  <option value={{item}}>{{item}}</option>
+                {% endfor %}
+              </select>
+
+              <br>
+
+              <label for="Add stock"><b>Add stock</b></label>
+              <input type="number" placeholder="Enter number of stock to add" name="add_stock" step="1">
+
+              <br>
+
+              <label for="Price"><b>New price</b></label>
+              <input type="number" placeholder="Enter new price" name="new_price" step="0.01">
+
+              <br>
+
+              <label for="Product Image"><b>Product Image</b></label>
+              <input type="file" name="product_image" accept="image/jpeg, image/jpg, image/png">
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-primary">Save changes</button>
+          </div>
+        </form>
+
+      </div>
+    </div>
+  </div>
+
+{% endblock %}

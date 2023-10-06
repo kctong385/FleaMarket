@@ -1,0 +1,62 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Orders
+{% endblock %}
+
+{% block left_nav %}
+<form action="/empty_data" method="post">
+    <button class="btn btn-primary" type="submit">Empty Data</button>
+</form>
+{% endblock %}
+
+{% block main %}
+
+<div class="container content">
+    <div id="users">table emptied</div>
+    <div id="products">table emptied</div>
+    <div id="cart">table emptied</div>
+    <div id="orders">table emptied</div>
+    <div id="order_details">table emptied</div>
+    <div id="transactions">table emptied</div>
+    <div id="transactions_seller">table emptied</div>
+    <div id="delivery_orders">table emptied</div>
+    <div id="delivery_details">table emptied</div>
+</div>
+
+
+<script>
+    function myTable(title, db_table) {
+        let headers = Object.keys(db_table[0]);
+        let html = `<h2> ${title} </h2> <table class="table"> <tr>`;
+
+        for (let header of headers) {
+            html += `<th> ${header} </th>`;
+        }
+        html += `</tr>`;
+
+        for (let row of db_table) {
+            html += `<tr>`;
+            let row_values = Object.values(row);
+
+            for (let cell_value of row_values) {
+                html += `<td> ${cell_value} </td>`;
+            }
+            html += `</tr>`;
+        }
+        html += `</table> <br>`;
+        return html;
+    }
+
+    document.getElementById("users").innerHTML = myTable("USERS", {{ users|tojson|safe }});
+    document.getElementById("products").innerHTML = myTable("PRODUCTS", {{ products|tojson|safe }});
+    document.getElementById("cart").innerHTML = myTable("CART", {{ cart|tojson|safe }});
+    document.getElementById("orders").innerHTML = myTable("ORDERS", {{ orders|tojson|safe }});
+    document.getElementById("order_details").innerHTML = myTable("ORDER DETAILS", {{ order_details|tojson|safe }});
+    document.getElementById("transactions").innerHTML = myTable("TRANSACTIONS", {{ transactions|tojson|safe }});
+    document.getElementById("transactions_seller").innerHTML = myTable("TRANSACTIONS_SELLER", {{ transactions_seller|tojson|safe }});
+    document.getElementById("delivery_orders").innerHTML = myTable("delivery_orders", {{ delivery_orders|tojson|safe }});
+    document.getElementById("delivery_details").innerHTML = myTable("delivery_details", {{ delivery_details|tojson|safe }});
+</script>
+
+{% endblock %}

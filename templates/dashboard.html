@@ -1,0 +1,169 @@
+{% extends "layout.html" %}
+
+{% block head %}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block title %}
+    Dashboard
+{% endblock %}
+
+{% block left_nav %}
+    <h5>
+        <!-- Reload chart data upon selection at side nav -->
+        <a class="nav-link active" onclick="reloadData('qty')">Sales Volume</a>
+        <a class="nav-link active" onclick="reloadData('revenue')">Sales Revenue</a>
+    </h5>
+{% endblock %}
+
+{% block right_nav %}
+{% endblock %}
+
+{% block main %}
+    <div class="content">
+        <h1>Dashboard</h1>
+
+        <!-- Session header, generated according to side nav selection. -->
+        <h3 id="header">No chart available</h3>
+
+        <!-- Chart population -->
+        <div class="d-flex flex-row flex-wrap justify-content-around">
+            {% for product in product_list %}
+                <div class="col">
+                    <canvas id="lineChart_{{ product }}" width="300" height="300"></canvas>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <script>
+        let productList = {{product_list|tojson|safe}};
+        let chartData = {{chart_data|tojson|safe}};
+
+        // Set horizontal scale
+        var months = [];
+        var period = 6;
+
+        // for chart labels
+        for (i = 0; i < period; i++) {
+            //define target month
+            var day = new Date();
+            cuurent_month = day.getMonth();
+            day.setMonth(cuurent_month - period + i + 1);
+
+            //convert target month into label
+            var y = day.getFullYear();
+            var m = (day.getMonth() + 1).toString();
+            month_text = `${y}-${m.padStart(2,'0')}`;
+
+            //save target month label in list
+            months.push(month_text);
+        }
+
+        var max = 0;
+
+        // Define chart function
+        function GenChart(chartId, index, data) {
+            // Set header
+            if (data == 'revenue') {
+                document.getElementById("header").innerHTML = 'Sales Revenue';
+            } else {
+                document.getElementById("header").innerHTML = 'Sales Volume';
+            }
+
+            // Set vertical scale. Scale is common for all chart.
+            max = 0;
+
+            for (row of chartData) {
+                if (row[data] > max) {
+                    max = row[data];
+                }
+            }
+
+            max = 10 * (Math.floor(max / 10) + 1);
+
+            // map values to months
+            var monthValuesMap = new Map();
+            for (var month of months) {
+                monthValuesMap.set(month, 0);
+            }
+
+            for (var row of chartData) {
+                if (row["product"] == productList[index]) {
+                    for (var month of months) {
+                        if (row["month"] == month) {
+                            monthValuesMap.set(month, row[data]);
+                        }
+                    }
+                }
+            }
+
+            //Load values from valuesMap
+            var values = [];
+            for (var month of months) {
+                values.push(monthValuesMap.get(month));
+            }
+
+            // Configure chart
+            var ctx = document.getElementById(chartId).getContext("2d");
+            var lineChart = new Chart(ctx, {
+                type: "bar",
+                data: {
+                    labels: months,
+                    datasets: [
+                        {
+                            label: productList[index],
+                            data: values,
+                            fill: false,
+                            borderColor: "rgb(0, 0, 255, 1)",
+                            backgroundColor: "rgb(0, 0, 255, 0.4)",
+                            borderWidth: 2,
+                            borderRadius: 5
+                        }
+                    ]
+                }, //end data
+                options: {
+                    responsive: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        title: {
+                            display: true,
+                            text: productList[index],
+                            fullSize: true
+                        },
+                        colors: {
+                            forceOverride: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            min: 0,
+                            max: max,
+                        }
+                    }
+                } // end option
+            }); // end chart method
+        } // end function mychart
+
+        // Populate chart for all products in list
+        for (let i = 0; i < productList.length; i++) {
+            chartId = 'lineChart_' + productList[i];
+            GenChart(chartId, i, "qty");
+        }
+
+        // Reload chart data upon selection at side nav
+        function reloadData(data) {
+            for (let i = 0; i < productList.length; i++) {
+                chartId = 'lineChart_' + productList[i];
+                var ctx = document.getElementById(chartId).getContext("2d");
+                var myChart = Chart.getChart(ctx);
+                myChart.destroy();
+
+                GenChart(chartId, i, data);
+            }
+        }
+    </script>
+
+{% endblock %}

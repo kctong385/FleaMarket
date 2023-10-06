@@ -1,0 +1,155 @@
+/* Brand style */
+  /* Size for brand */
+  nav .navbar-brand
+  {
+      font-size: xx-large;
+      font-family: "Sofia", sans-serif;
+  }
+
+  /* Colors for brand */
+  nav .navbar-brand .blue
+  {
+      color: #537fbe;
+  }
+  nav .navbar-brand .red
+  {
+      color: #ea433b;
+  }
+  nav .navbar-brand .yellow
+  {
+      color: #f5b82e;
+  }
+  nav .navbar-brand .green
+  {
+      color: #2e944b;
+  }
+  nav .navbar-brand .orange
+  {
+      color: #FF6F00;
+  }
+
+/* Title style */
+h1
+{
+  font-family:  "Sofia", sans-serif;
+  padding-bottom: 20px;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+main {
+  margin-top: 75px;
+}
+
+main .core {
+  background-color: #ffffcc;
+}
+
+.content {
+  overflow: auto;
+  height: calc(100vh - 150px);
+  padding-top: 3rem;
+  /* margin-bottom: 150px; */
+}
+
+/* Set black background color, white text and some padding */
+footer {
+  background-color: #555;
+  color: white;
+  height: 75px;
+  position: fixed;
+  bottom: 0;
+  padding: 25px;
+}
+
+/* Nav bar style */
+.navbar
+{
+    height: 75px;
+    border-radius: 0;
+    color: white;
+    background-color: #FFFF00;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    overflow: hidden;
+    z-index: 2;
+}
+
+.navbar li:hover
+{
+  background-color: #ffffcc;
+}
+
+
+/* Set gray background color */
+.sidenav {
+  padding-right:0px;
+  padding-left:0px;
+  background-color: #ffff77;
+}
+
+.sidenav a:hover
+{
+  background-color: #ffffcc;
+  cursor: pointer;
+}
+
+
+
+/* On small screens, set height to 'auto' for sidenav and grid */
+@media screen and (max-width: 767px) {
+  .sidenav {
+    height: auto;
+    padding: 15px;
+  }
+  .row.content {height:auto;}
+}
+
+
+.padding
+{
+  padding: 10px;
+}
+
+.align-center
+{
+  text-align: center;
+}
+
+.align-left
+{
+  text-align: left;
+}
+
+.align-right
+{
+  text-align: right;
+}
+
+.broswer-container
+{
+  display: flex;
+  flex-wrap: wrap;
+  text-align: center;
+}
+
+.mh-750
+{
+  min-height: 750px;
+}
+
+.black-border
+{
+  border-style: solid;
+  border-color: black;
+}
+
+/* For collasible table */
+.hiddenRow {
+  padding: 0 !important;
+}

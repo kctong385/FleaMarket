@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+    <head>
+
+        <meta charset="utf-8">
+        <meta name="viewport" content="initial-scale=1, width=device-width">
+
+        <!-- http://getbootstrap.com/docs/5.1/ -->
+        <link crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" rel="stylesheet">
+        <script crossorigin="anonymous" src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"></script>
+
+        {% block head %}{% endblock %}
+
+        <!-- https://favicon.io/emoji-favicons/money-bag/ -->
+        <link href="/static/favicon.ico" rel="icon">
+
+        <link href="/static/styles.css" rel="stylesheet">
+
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Audiowide|Sofia|Trirong">
+
+        <title>Flea Market: {% block title %}{% endblock %}</title>
+
+    </head>
+
+    <body>
+
+        <!-- nav bar -->
+        <nav class="border navbar navbar-expand-md" style="overflow: visible;">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="/">
+                    <span class="blue">F</span>
+                    <span class="orange">l</span>
+                    <span class="yellow">e</span>
+                    <span class="green">a</span>
+                    <span class="red" style="font-family: 'Concert One', cursive;">Market</span>
+                </a>
+                <button aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation" class="navbar-toggler" data-bs-target="#navbar" data-bs-toggle="collapse" type="button">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                    <!-- login session -->
+                    {% if session["user_id"] %}
+                        {% if session["portal"] == 'buyer' %}
+                            <ul class="navbar-nav me-auto mt-2">
+                                <li class="nav-item"><a class="nav-link" href="/">Browser</a></li>
+                                <li class="nav-item"><a class="nav-link" href="/cart">My Cart</a></li>
+                                <li class="nav-item"><a class="nav-link" href="/wallet">My Wallet</a></li>
+                            </ul>
+                        {% endif %}
+
+                        {% if session["portal"] == 'seller' %}
+                            <ul id="seller" class="navbar-nav me-auto mt-2">
+                                <li class="nav-item"><a class="nav-link" href="/dashboard">Dashboard</a></li>
+                                <li class="nav-item"><a class="nav-link" href="/product">My Store</a></li>
+                                <li class="nav-item"><a class="nav-link" href="/order">Orders and Delivery</a></li>
+                            </ul>
+                        {% endif %}
+
+                        <ul class="navbar-nav ms-auto mt-2">
+                            <!-- <li class="nav-item"><a class="nav-link" href="/check">Check</a></li> -->
+                            {% if session["portal"] == 'buyer' %}
+                                <button type="button" class="btn btn-info" onclick="window.location.href = '/dashboard'">Selling Portal</button>
+                            {% endif %}
+                            {% if session["portal"] == 'seller' %}
+                                <button type="button" class="btn btn-warning" onclick="window.location.href = '/browser'">Shopping Portal</button>
+                            {% endif %}
+                            <li class="dropdown" style="margin-left: 10px;">
+                                <button class="btn btn-success dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Welcome, {{ session["username"] }}!
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="/update">Setting</a></li>
+                                    <li><a class="dropdown-item" href="/logout">Log Out</a></li>
+                                </ul>
+                            </li>
+                        </ul>
+
+                    {% else %}
+                        <ul class="navbar-nav ms-auto mt-2">
+                            <!-- <li class="nav-item"><a class="nav-link" href="/check">Check</a></li> -->
+                            <li class="nav-item"><a class="nav-link" href="/register">Register</a></li>
+                            <li class="nav-item"><a class="nav-link" href="/login">Log In</a></li>
+                        </ul>
+                    {% endif %}
+                <!-- </div> -->
+            </div>
+        </nav>
+
+        <!-- end of nav bar -->
+
+        {% if get_flashed_messages() %}
+            <header style="margin-top: 75px;">
+
+            </header>
+        {% endif %}
+
+        <main>
+            <div class="row text-center">
+                <!-- left nav bar -->
+                <div class="col-sm-2 sidenav">
+                    <div class="container py-5 align-center">
+                        {% block left_nav %}{% endblock %}
+                    </div>
+
+                </div>
+
+                <div class="col-sm-8 core">
+                    {% block main %}{% endblock %}
+                </div>
+
+                <!-- right nav bar -->
+                <div class="col-sm-2 sidenav">
+
+                    {% if session["user_id"] %}
+                        <div class="container py-5 align-left">
+                            <h4>Wallet Balance: </h3>
+                            <h4>{{ session["wallet_bal"]|usd }}</h3>
+                            <br>
+                            <h4>Store Balance: </h3>
+                            <h4>{{ session["store_bal"]|usd }}</h3>
+                            <br>
+
+                            {% if get_flashed_messages() %}
+                                <h4>Error Message:</h4>
+                                <div class="alert alert-danger mb-0 text-center" role="alert">
+                                    {{ get_flashed_messages() | join(" ") }}
+                                </div>
+                                <br>
+                            {% endif %}
+                        </div>
+                        {% block right_nav %}{% endblock %}
+                    {% endif %}
+                </div> <!--end right nav bar-->
+            </div> <!--end row-->
+        </main>
+
+        <footer class="container-fluid text-center">
+            Image provided by <a href="https://commons.wikimedia.org/wiki/Main_Page">Wikimedia</a>
+        </footer>
+
+    </body>
+
+</html>

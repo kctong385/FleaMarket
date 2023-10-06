@@ -1,0 +1,114 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    My Cart
+{% endblock %}
+
+{% block main %}
+    <div class="container content">
+        <h1>MyCart</h1>
+
+        <h3>Cart Summary</h3>
+        <div class="h4" style="Width: 50%; margin: auto;">
+            <div class="row" style="margin-bottom: 5px;">
+                <div class="col align-left">Contact:</div>
+                <div class="col">{{ users[0]["contact"] }}</div>
+            </div>
+
+            <div class="row" style="margin-bottom: 5px;">
+                <div class="col align-left">Shipping:</div>
+                <div class="col">{{ users[0]["address"] }}</div>
+            </div>
+
+            <div class="row" style="margin-bottom: 5px;">
+                <div class="col align-left">Total:</div>
+                <div class="col">{{ total|usd }}</div>
+            </div>
+
+            <form action="/check_out" method="post">
+                <button type="submit" class="btn btn-primary">Check out</button>
+            </form>
+        </div>
+
+        <br><br>
+
+        <h3>Cart Items</h3>
+        <div>
+            <table class="table table-hover">
+                <tr>
+                    <th>Product</th>
+                    <th>Price</th>
+                    <th>Qty</th>
+                    <th>Subtotal</th>
+                    <th colspan="5">Quantity</th>
+                    <th>Remove</th>
+                </tr>
+
+                <!-- Populate items stored in cart -->
+                {% for row in cart %}
+                    <tr>
+                        <td>{{ row["product_name"] }}</td>
+                        <td>{{ row["price"]|usd }}</td>
+                        <td>{{ row["quantity"] }}</td>
+                        <td>{{row["quantity"] * row["price"]}}</td>
+
+                        <!-- +/- Button for alternating Qty -->
+                        <td>
+                            <form action="/revise_cart_qty" method="post">
+                                <input type="hidden" name="product_id" value={{ row["product_id"] }}>
+                                <input type="hidden" name="qty_btn" value="1">
+                                <td><button type="submit">+1</button></td>
+                            </form>
+                            <form action="/revise_cart_qty" method="post">
+                                <input type="hidden" name="product_id" value={{ row["product_id"] }}>
+                                <input type="hidden" name="qty_btn" value="-1">
+                                <td><button type="submit">-1</button></td>
+                            </form>
+                        </td>
+
+                        <!-- Dropdown list for alternating Qty -->
+                        <td>
+                            <!-- Utilize javascript to populate option list and submit form onchange -->
+                            <form id="qty_form_{{ row['product_id'] }}" action="/revise_cart_qty" method="post">
+                                <input type="hidden" name="product_id" value={{ row["product_id"] }}>
+                                <select id="qty_{{ row['product_id'] }}" name="qty_dropdown" onchange="submit_qty_form({{ row['product_id'] }})"></select>
+                            </form>
+                        </td>
+
+                        <!-- Button for removing item from cart -->
+                        <td>
+                            <form action="/remove_item" method="post">
+                                <input type="hidden" name="product_id" value={{ row["product_id"] }}>
+                                <td><button type="submit">Remove</button></td>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </table>
+
+            <script>
+                var min = 1;
+                var max = 50;
+
+                let option_list = `<option label="Qty">`;
+
+                for (var i = min; i < max + 1; i++) {
+                    option_list += `<option value="${i}">${i}</option>`;
+                }
+
+                let list = {{ cart|tojson|safe }};
+
+                for (let row of list) {
+                    let id = `qty_` + row["product_id"];
+                    document.getElementById(id).innerHTML = option_list;
+                }
+
+                function submit_qty_form(pid) {
+                    let id = `qty_form_` + pid;
+                    document.getElementById(id).submit();
+                }
+            </script>
+        </div>
+    </div>
+
+{% endblock %}

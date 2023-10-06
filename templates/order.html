@@ -1,0 +1,133 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Orders
+{% endblock %}
+
+{% block left_nav %}
+    <h5>
+        <a class="nav-link active" aria-current="page" onclick="display_orders()">Arrange Deliveries</a>
+        <a class="nav-link" onclick="display_delivery()">Delivery Orders</a>
+    </h5>
+
+    <script>
+        function display_orders() {
+            document.getElementById("orders").style.display = "block";
+            document.getElementById("delivery").style.display = "none";
+        }
+
+        function display_delivery() {
+            document.getElementById("orders").style.display = "none";
+            document.getElementById("delivery").style.display = "block";
+        }
+    </script>
+{% endblock %}
+
+
+{% block right_nav %}
+{% endblock %}
+
+
+{% block main %}
+    <div class="container content">
+        <h1>Orders and Delivery</h1>
+        <div id="orders">
+            <h3>Items to be delivered</h3>
+
+            <form action="/delivered" method="post">
+            <table class="table table-striped">
+                <tr>
+                    <th>Order#</th>
+                    <th>Produce Name</th>
+                    <th>Qty</th>
+                    <th>Sold Price</th>
+                    <th>Address</th>
+                    <th><button type="submit" class="btn btn-success">Deliver!</button></th>
+                </tr>
+
+                {% for row in order_details %}
+                <tr>
+                    <td>{{ row["order_id"] }}</td>
+                    <td>{{ row["product_name"] }}</td>
+                    <td>{{ row["quantity"] }}</td>
+                    <td>{{ row["sold_price"] }}</td>
+                    <td>{{ row["address"] }}</td>
+                    <td>
+                        <input id="cb_{{ row['id"'] }}" name="items_to_deliver" type="checkbox" class="form-check-input" value={{ row['id'] }}>
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+            </form>
+        </div> <!--orders-->
+
+        <div id="delivery" style="Display: none">
+            <h3>Delivery</h3>
+
+            <table id="main_table" class="table table-striped">
+                <tr>
+                    <th>Details</th>
+                    <th>Datetime</th>
+                    <th>Delivery Order#</th>
+                </tr>
+
+                {% for row in delivery_orders %}
+                <tr>
+                    <td><button type="button" class="btn btn-primary" data-bs-toggle="collapse" data-bs-target="#table_DD_{{row['delivery_order_id']}}">Expand</button></td>
+                    <td>{{ row["datetime"] }}</td>
+                    <td>{{ row["delivery_order_id"] }}</td>
+                </tr>
+
+                <tr>
+                    <td colspan="3" class="hiddenRow">
+                        <div id="table_DD_{{row['delivery_order_id']}}" class="collapse">script not good</div>
+                    </td>
+                </tr>
+                {% endfor %}
+
+                <script>
+                    let mother_data = {{delivery_orders|tojson|safe}};
+                    let child_data = {{delivery_details|tojson|safe}};
+
+                    function generate_table(pk) {
+                        var child_table_data = [];
+
+                        for (row of child_data) {
+                            if (row["delivery_order_id"] == pk) {
+                                child_table_data.push(row);
+                            }
+                        }
+
+                        var html = `<table class="table" style="margin-bottom: 0rem">`;
+                            html += `<tr>`;
+                            html += `<th>Order#</th>`;
+                            html += `<th>Product</th>`;
+                            html += `<th>Quantity</th>`;
+                            html += `<th>Address</th>`;
+                            html += `</tr>`;
+
+                        for (row of child_table_data) {
+                            html += `<tr>`;
+                            html += `<td>${row["order_id"]}</td>`;
+                            html += `<td>${row["product_name"]}</td>`;
+                            html += `<td>${row["quantity"]}</td>`;
+                            html += `<td>${row["address"]}</td>`;
+                            html += `</tr>`;
+                        }
+
+                        html += `</table>`;
+
+                        return html;
+                    }
+
+                    for (row of mother_data) {
+                        var pk = row["delivery_order_id"];
+                        var table_id = `table_DD_${pk}`;
+                        document.getElementById(table_id).innerHTML = generate_table(pk);
+                    }
+                </script>
+            </table>
+        </div> <!--delivery-->
+    </div> <!--container-->
+
+{% endblock %}
